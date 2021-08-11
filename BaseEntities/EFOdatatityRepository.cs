@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 namespace BaseEntities
 {
-    public abstract class EFOdatatityRepository<TentityType, TContextType> : IOdataEntityRepository<TentityType> where TentityType : class, IBaseEntity where TContextType : DbContext
+    public abstract class EFOdatatityRepository<TentityType, TContextType>
+        : IOdataEntityRepository<TentityType>
+        where TentityType : class, IBaseEntity
+        where TContextType : DbContext
     {
         protected abstract Expression<Func<TContextType, DbSet<TentityType>>> EntityDbSetSelector { get; }
         protected abstract TContextType ContextType { get; }
@@ -26,24 +29,27 @@ namespace BaseEntities
             BeforeEntityAdd(entity);
             await contextType.SaveChangesAsync();
             AfterEntityAdd(entity);
+            await contextType.DisposeAsync();
         }
 
         public async Task DeleteEntity(Guid id)
         {
             TContextType contextType = ContextType;
-            var entityDbSet = EntityDbSetFunc(contextType);
-            var entity = await entityDbSet.SingleAsync(x => x.Id == id);
+            DbSet<TentityType> entityDbSet = EntityDbSetFunc(contextType);
+            TentityType entity = await entityDbSet.SingleAsync(x => x.Id == id);
             entityDbSet.Remove(entity);
             BeforeEntityDelete(entity);
             await contextType.SaveChangesAsync();
             AfterEntityDelete(entity);
+            await contextType.DisposeAsync();
         }
 
         public IQueryable<TentityType> GetEntities(Expression<Func<TentityType, bool>> predicate)
         {
             TContextType contextType = ContextType;
-            var entityDbSet = EntityDbSetFunc(contextType);
-            return entityDbSet.Where(predicate);
+            DbSet<TentityType> entityDbSet = EntityDbSetFunc(contextType);
+            return entityDbSet.Where(predicate).AsNoTracking();
+
         }
 
         public async Task UpdateEntity(TentityType entity)
@@ -54,6 +60,7 @@ namespace BaseEntities
             BeforeEntityUpdate(entity);
             await contextType.SaveChangesAsync();
             AfterEntityUpdate(entity);
+            await contextType.DisposeAsync();
         }
 
         protected virtual void BeforeEntityUpdate(TentityType entity) { }
