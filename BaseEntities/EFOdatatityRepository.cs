@@ -16,11 +16,16 @@ namespace BaseEntities
         private Func<TContextType, DbSet<TentityType>> entityDbSetFunc;
         private Func<TContextType, DbSet<TentityType>> EntityDbSetFunc => entityDbSetFunc ??= EntityDbSetSelector.Compile();
 
+
+
         public async Task AddEntity(TentityType entity)
         {
+            entity.CreatedOn = DateTime.Now;
             TContextType contextType = ContextType;
             await EntityDbSetFunc(contextType).AddAsync(entity);
+            BeforeEntityAdd(entity);
             await contextType.SaveChangesAsync();
+            AfterEntityAdd(entity);
         }
 
         public async Task DeleteEntity(Guid id)
@@ -29,7 +34,9 @@ namespace BaseEntities
             var entityDbSet = EntityDbSetFunc(contextType);
             var entity = await entityDbSet.SingleAsync(x => x.Id == id);
             entityDbSet.Remove(entity);
+            BeforeEntityDelete(entity);
             await contextType.SaveChangesAsync();
+            AfterEntityDelete(entity);
         }
 
         public IQueryable<TentityType> GetEntities(Expression<Func<TentityType, bool>> predicate)
@@ -43,7 +50,17 @@ namespace BaseEntities
         {
             TContextType contextType = ContextType;
             contextType.Attach(entity);
+            entity.ModifiedOn = DateTime.Now;
+            BeforeEntityUpdate(entity);
             await contextType.SaveChangesAsync();
+            AfterEntityUpdate(entity);
         }
+
+        protected virtual void BeforeEntityUpdate(TentityType entity) { }
+        protected virtual void AfterEntityUpdate(TentityType entity) { }
+        protected virtual void BeforeEntityAdd(TentityType entity) { }
+        protected virtual void AfterEntityAdd(TentityType entity) { }
+        protected virtual void BeforeEntityDelete(TentityType entity) { }
+        protected virtual void AfterEntityDelete(TentityType entity) { }
     }
 }

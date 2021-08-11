@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace BaseEntities
 {
@@ -8,7 +9,7 @@ namespace BaseEntities
     /// </summary>
     public interface IBaseEntity
     {
-        public Guid Id { get; set; }
+        [Key] public Guid Id { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime ModifiedOn { get; set; }
     }
