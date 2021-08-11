@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace BaseEntities
 {
+    /// <summary>
+    /// Представляет собой справочник, т.е. объект, у которого есть название и, возможно, описание.
+    /// </summary>
     public interface IBaseLookup : IBaseEntity
     {
         public string Name { get; set; }

@@ -28,8 +28,9 @@ namespace BaseEntities
             await EntityDbSetFunc(contextType).AddAsync(entity);
             BeforeEntityAdd(entity);
             await contextType.SaveChangesAsync();
-            AfterEntityAdd(entity);
-            await contextType.DisposeAsync();
+            var eventTriggerTask = AfterEntityAdd(entity);
+            var disposingTask = contextType.DisposeAsync().AsTask();
+            Task.WaitAll(eventTriggerTask, disposingTask);
         }
 
         public async Task DeleteEntity(Guid id)
@@ -40,8 +41,9 @@ namespace BaseEntities
             entityDbSet.Remove(entity);
             BeforeEntityDelete(entity);
             await contextType.SaveChangesAsync();
-            AfterEntityDelete(entity);
-            await contextType.DisposeAsync();
+            var eventTriggerTask = AfterEntityDelete(entity);
+            var disposingTask = contextType.DisposeAsync().AsTask();
+            Task.WaitAll(eventTriggerTask, disposingTask);
         }
 
         public IQueryable<TentityType> GetEntities(Expression<Func<TentityType, bool>> predicate)
@@ -59,15 +61,16 @@ namespace BaseEntities
             entity.ModifiedOn = DateTime.Now;
             BeforeEntityUpdate(entity);
             await contextType.SaveChangesAsync();
-            AfterEntityUpdate(entity);
-            await contextType.DisposeAsync();
+            var eventTriggerTask = AfterEntityUpdate(entity);
+            var disposingTask = contextType.DisposeAsync().AsTask();
+            Task.WaitAll(eventTriggerTask, disposingTask);
         }
 
         protected virtual void BeforeEntityUpdate(TentityType entity) { }
-        protected virtual void AfterEntityUpdate(TentityType entity) { }
+        protected virtual Task AfterEntityUpdate(TentityType entity) => Task.CompletedTask;
         protected virtual void BeforeEntityAdd(TentityType entity) { }
-        protected virtual void AfterEntityAdd(TentityType entity) { }
+        protected virtual Task AfterEntityAdd(TentityType entity) => Task.CompletedTask;
         protected virtual void BeforeEntityDelete(TentityType entity) { }
-        protected virtual void AfterEntityDelete(TentityType entity) { }
+        protected virtual Task AfterEntityDelete(TentityType entity) => Task.CompletedTask;
     }
 }
