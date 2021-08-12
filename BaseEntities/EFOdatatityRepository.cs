@@ -23,13 +23,12 @@ namespace BaseEntities
 
         public async Task AddEntity(TentityType entity)
         {
-            entity.CreatedOn = DateTime.Now;
             TContextType contextType = ContextType;
             await EntityDbSetFunc(contextType).AddAsync(entity);
             BeforeEntityAdd(entity);
             await contextType.SaveChangesAsync();
-            var eventTriggerTask = AfterEntityAdd(entity);
-            var disposingTask = contextType.DisposeAsync().AsTask();
+            Task? eventTriggerTask = AfterEntityAdd(entity);
+            Task? disposingTask = contextType.DisposeAsync().AsTask();
             Task.WaitAll(eventTriggerTask, disposingTask);
         }
 
@@ -41,8 +40,8 @@ namespace BaseEntities
             entityDbSet.Remove(entity);
             BeforeEntityDelete(entity);
             await contextType.SaveChangesAsync();
-            var eventTriggerTask = AfterEntityDelete(entity);
-            var disposingTask = contextType.DisposeAsync().AsTask();
+            Task? eventTriggerTask = AfterEntityDelete(entity);
+            Task? disposingTask = contextType.DisposeAsync().AsTask();
             Task.WaitAll(eventTriggerTask, disposingTask);
         }
 
@@ -58,11 +57,10 @@ namespace BaseEntities
         {
             TContextType contextType = ContextType;
             contextType.Attach(entity);
-            entity.ModifiedOn = DateTime.Now;
             BeforeEntityUpdate(entity);
             await contextType.SaveChangesAsync();
-            var eventTriggerTask = AfterEntityUpdate(entity);
-            var disposingTask = contextType.DisposeAsync().AsTask();
+            Task? eventTriggerTask = AfterEntityUpdate(entity);
+            Task? disposingTask = contextType.DisposeAsync().AsTask();
             Task.WaitAll(eventTriggerTask, disposingTask);
         }
 

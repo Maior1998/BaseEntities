@@ -11,7 +11,13 @@ namespace BaseEntities
     /// </summary>
     public interface IBaseLookup : IBaseEntity
     {
+        /// <summary>
+        /// Название данной записи справочника.
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Возможное описание данной записи справочника.
+        /// </summary>
         public string? Description { get; set; }
     }
 }

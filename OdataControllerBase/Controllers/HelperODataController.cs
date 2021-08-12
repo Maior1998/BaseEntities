@@ -12,8 +12,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
 namespace OdataControllerBase.Controllers
 {
+    /// <summary>
+    /// Представляет собой вспомогательный контроллер для организации и поддержания работы сервиса OData.
+    /// </summary>
+    /// <typeparam name="T">Тип сущности, которую будет предоставлять данный контроллер.</typeparam>
     public abstract class HelperODataController<T> : ODataController where T : class, IBaseEntity
     {
         public IOdataEntityRepository<T> repository { get; }
@@ -41,7 +47,10 @@ namespace OdataControllerBase.Controllers
             {
                 return BadRequest(ModelState);
             }
+            BeforeAddEntity(entity);
+            entity.CreatedOn = DateTime.Now;
             await repository.AddEntity(entity);
+            _ = AfterAddEntity(entity);
             return Created(entity);
         }
 
@@ -52,13 +61,16 @@ namespace OdataControllerBase.Controllers
                 return BadRequest(ModelState);
             }
 
-            var entity = await repository.GetEntityById(key);
+            T entity = await repository.GetEntityById(key);
             if (entity == null)
             {
                 return NotFound();
             }
+            BeforeSaveEntity(entity);
             product.Patch(entity);
+            entity.ModifiedOn = DateTime.Now;
             await repository.UpdateEntity(entity);
+            _ = AfterSaveEntity(entity);
             return Updated(entity);
         }
 
@@ -68,20 +80,31 @@ namespace OdataControllerBase.Controllers
             {
                 return BadRequest(ModelState);
             }
-
+            BeforeSaveEntity(update);
+            update.ModifiedOn = DateTime.Now;
             await repository.UpdateEntity(update);
+            _ = AfterSaveEntity(update);
             return Updated(update);
         }
 
         public async Task<IActionResult> Delete([FromODataUri] Guid key)
         {
-            var product = await repository.GetEntityById(key);
-            if (product == null)
+            T entity = await repository.GetEntityById(key);
+            if (entity == null)
             {
                 return NotFound();
             }
+            BeforeDeleteEntity(entity);
             await repository.DeleteEntity(key);
+            _ = AfterDeleteEntity(entity);
             return NoContent();
         }
+
+        protected virtual void BeforeAddEntity(T entity) { }
+        public virtual Task AfterAddEntity(T entity) => Task.CompletedTask;
+        protected virtual void BeforeSaveEntity(T entity) { }
+        public virtual Task AfterSaveEntity(T entity) => Task.CompletedTask;
+        protected virtual void BeforeDeleteEntity(T entity) { }
+        public virtual Task AfterDeleteEntity(T entity) => Task.CompletedTask;
     }
 }

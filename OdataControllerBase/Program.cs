@@ -14,6 +14,7 @@ namespace OdataControllerBase
     {
         public static void Main(string[] args)
         {
+            throw new Exception("This project can not be started since this is a \"library\"");
         }
 
     }
