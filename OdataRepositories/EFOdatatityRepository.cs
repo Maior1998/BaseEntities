@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BaseEntities;
+
+using Microsoft.EntityFrameworkCore;
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +9,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BaseEntities
+namespace OdataRepositories
 {
     public abstract class EFOdatatityRepository<TentityType, TContextType>
         : IOdataEntityRepository<TentityType>
